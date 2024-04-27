@@ -5,7 +5,11 @@
  *
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
-static char *font = "Ubuntu Mono:pixelsize=30:antialias=true:autohint=true";
+//static char *font = "Ubuntu Mono:pixelsize=30:antialias=true:autohint=true";
+//static char *font = "Hack Nerd Font:pixelsize=30:antialias=true:autohint=true";
+//static char *font = "Liberation Mono:style=Bold:pixelsize=30:antialias=true:autohint=true";
+static char *font = "Liberation Mono:pixelsize=24:antialias=true:autohint=true";
+//static char *font = "Monaspace Neon:pixelsize=30:antialias=true:authint=true";
 static int borderpx = 0;
 
 /*
@@ -53,7 +57,7 @@ int allowwindowops = 0;
  * near minlatency, but it waits longer for slow updates to avoid partial draw.
  * low minlatency will tear/flicker more, as it can "detect" idle too early.
  */
-static double minlatency = 8;
+static double minlatency = 2;
 static double maxlatency = 33;
 
 /*
@@ -97,46 +101,90 @@ unsigned int tabspaces = 8;
 float alpha = 1.;
 float alpha_def;
 
-/* Terminal colors (16 first used in escape sequence) */
-static const char *colorname[] = {
-	/* 8 normal colors */
-	"black",
-	"red3",
-	"green3",
-	"yellow3",
-	"blue2",
-	"magenta3",
-	"cyan3",
-	"gray90",
-
-	/* 8 bright colors */
-	"gray50",
-	"red",
-	"green",
-	"yellow",
-	"#5c5cff",
-	"magenta",
-	"cyan",
-	"white",
-
-	[255] = 0,
-
-	/* more colors can be added after 255 to use with DefaultXX */
-	"#cccccc",
-	"#555555",
-	"gray90", /* default foreground colour */
-	"black", /* default background colour */
+/* Terminal colors (16 used in escape sequence) */
+static const char *palettes[][16] = {
+  // palette 3
+  {"#20242d", "#b04b57", "#87b379", "#e5c179", "#7d8fa4", "#a47996", "#85a7a5", "#b3b8c3", "#000000", "#b04b57", "#87b379", "#e5c179", "#7d8fa4", "#a47996", "#85a7a5", "#ffffff"},
+  // gruvbox-dark
+  {"#282828", /* hard contrast: #1d2021 / soft contrast: #32302f */
+    "#cc241d", /* red     */
+    "#98971a", /* green   */
+    "#d79921", /* yellow  */
+    "#458588", /* blue    */
+    "#b16286", /* magenta */
+    "#689d6a", /* cyan    */
+    "#a89984", /* white   */
+    "#928374", /* black   */
+    "#fb4934", /* red     */
+    "#b8bb26", /* green   */
+    "#fabd2f", /* yellow  */
+    "#83a598", /* blue    */
+    "#d3869b", /* magenta */
+    "#8ec07c", /* cyan    */
+    "#ebdbb2", /* white   */
+  },
+  // gruvbox-light
+  {
+    "#fbf1c7", /* hard contrast: #f9f5d7 / soft contrast: #f2e5bc */
+    "#cc241d", /* red     */
+    "#98971a", /* green   */
+    "#d79921", /* yellow  */
+    "#458588", /* blue    */
+    "#b16286", /* magenta */
+    "#689d6a", /* cyan    */
+    "#7c6f64", /* white   */
+    "#928374", /* black   */
+    "#9d0006", /* red     */
+    "#79740e", /* green   */
+    "#b57614", /* yellow  */
+    "#076678", /* blue    */
+    "#8f3f71", /* magenta */
+    "#427b58", /* cyan    */
+    "#3c3836", /* white   */
+  },
+  // nordic theme
+  {
+    "#3b4252", /* black   */
+    "#bf616a", /* red     */
+    "#a3be8c", /* green   */
+    "#ebcb8b", /* yellow  */
+    "#81a1c1", /* blue    */
+    "#b48ead", /* magenta */
+    "#88c0d0", /* cyan    */
+    "#e5e9f0", /* white   */
+    "#4c566a", /* black   */
+    "#bf616a", /* red     */
+    "#a3be8c", /* green   */
+    "#ebcb8b", /* yellow  */
+    "#81a1c1", /* blue    */
+    "#b48ead", /* magenta */
+    "#8fbcbb", /* cyan    */
+    "#eceff4", /* white   */
+  },
+  // default
+  {"black", "red3", "green3", "yellow3", "blue2", "white", "cyan3", "gray90", "gray50", "red", "green", "yellow", "#5c5cff", "magenta", "cyan", "white" },
+  // palette 1
+  {"#223", "#900", "#080", "#fe7", "#35e", "#fc5", "#18e", "#aaa", "#666", "#f25", "#0b0", "#ff6", "#46f", "#d6a", "#6bf", "#ddd"},
+  // palette 2
+  {"#eaeaea", "#b7141f", "#457b24", "#fc7b08", "#134eb2", "#560088", "#0e717c", "#777777", "#424242", "#e83b3f", "#7aba3a", "#fd8e09", "#54a4f3", "#aa4dbc", "#26bbd1", "#aaaaaa"},
+  // cyberpunk-neon
+  {"#123e7c", "#ff0000", "#d300c4", "#f57800", "#123e7c", "#711c91", "#0abdc6", "#d7d7d5", "#1c61c2", "#ff0000", "#d300c4", "#f57800", "#00ff00", "#711c91", "#0abdc6", "#d7d7d5"},
 };
 
+static const char **colorname;
 
 /*
  * Default colors (colorname index)
  * foreground, background, cursor, reverse cursor
  */
-unsigned int defaultfg = 258;
-unsigned int defaultbg = 259;
-unsigned int defaultcs = 256;
-static unsigned int defaultrcs = 257;
+//unsigned int defaultfg = 258;
+//unsigned int defaultbg = 259;
+//unsigned int defaultcs = 256;
+//static unsigned int defaultrcs = 257;
+unsigned int defaultfg = 5;
+unsigned int defaultbg = 0;
+unsigned int defaultcs = 5;
+static unsigned int defaultrcs = 5;
 
 /*
  * Default shape of cursor
@@ -207,6 +255,15 @@ static Shortcut shortcuts[] = {
 	{ TERMMOD,              XK_Num_Lock,    numlock,        {.i =  0} },
   { MODKEY,               XK_bracketleft, chgalpha,       {.f = -1} }, /* Decrease opacity */
   { MODKEY,               XK_bracketright,chgalpha,       {.f = +1} }, /* Increase opacity */
+	{ MODKEY,               XK_F1,          setpalette,     {.i =  0} }, /* Chage color palette */
+	{ MODKEY,               XK_F2,          setpalette,     {.i =  1} },
+	{ MODKEY,               XK_F3,          setpalette,     {.i =  2} },
+	{ MODKEY,               XK_F4,          setpalette,     {.i =  3} },
+	{ MODKEY,               XK_F5,          setpalette,     {.i =  4} },
+	{ MODKEY,               XK_F6,          setpalette,     {.i =  5} },
+	{ MODKEY,               XK_F7,          setpalette,     {.i =  6} },
+	{ MODKEY,               XK_F8,          setpalette,     {.i =  7} },
+	{ MODKEY,               XK_F9,          setpalette,     {.i =  8} },
 };
 
 /*
