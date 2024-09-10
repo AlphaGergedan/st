@@ -1,0 +1,118 @@
+From ddc933e5dc9d030b8014c1381a7e84229be63f83 Mon Sep 17 00:00:00 2001
+From: Atamert Rahma <atamertrahma@gmail.com>
+Date: Tue, 10 Sep 2024 19:52:34 +0200
+Subject: [PATCH] add changealpha patch
+
+see: https://st.suckless.org/patches/changealpha/st-changealpha-20230519-b44f2ad.diff
+---
+ config.def.h | 29 ++++++++++++++++-------------
+ st.h         |  2 +-
+ x.c          | 21 +++++++++++++++++++++
+ 3 files changed, 38 insertions(+), 14 deletions(-)
+
+diff --git a/config.def.h b/config.def.h
+index e019f50..7bfb1d9 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -95,6 +95,7 @@ unsigned int tabspaces = 8;
+ 
+ /* bg opacity */
+ float alpha = 0.8;
++float alpha_def;
+ 
+ /* Terminal colors (16 first used in escape sequence) */
+ static const char *colorname[] = {
+@@ -191,19 +192,21 @@ static MouseShortcut mshortcuts[] = {
+ #define TERMMOD (ControlMask|ShiftMask)
+ 
+ static Shortcut shortcuts[] = {
+-	/* mask                 keysym          function        argument */
+-	{ XK_ANY_MOD,           XK_Break,       sendbreak,      {.i =  0} },
+-	{ ControlMask,          XK_Print,       toggleprinter,  {.i =  0} },
+-	{ ShiftMask,            XK_Print,       printscreen,    {.i =  0} },
+-	{ XK_ANY_MOD,           XK_Print,       printsel,       {.i =  0} },
+-	{ TERMMOD,              XK_Prior,       zoom,           {.f = +1} },
+-	{ TERMMOD,              XK_Next,        zoom,           {.f = -1} },
+-	{ TERMMOD,              XK_Home,        zoomreset,      {.f =  0} },
+-	{ TERMMOD,              XK_C,           clipcopy,       {.i =  0} },
+-	{ TERMMOD,              XK_V,           clippaste,      {.i =  0} },
+-	{ TERMMOD,              XK_Y,           selpaste,       {.i =  0} },
+-	{ ShiftMask,            XK_Insert,      selpaste,       {.i =  0} },
+-	{ TERMMOD,              XK_Num_Lock,    numlock,        {.i =  0} },
++	/* mask                 keysym           function        argument */
++	{ XK_ANY_MOD,           XK_Break,        sendbreak,      {.i =  0} },
++	{ ControlMask,          XK_Print,        toggleprinter,  {.i =  0} },
++	{ ShiftMask,            XK_Print,        printscreen,    {.i =  0} },
++	{ XK_ANY_MOD,           XK_Print,        printsel,       {.i =  0} },
++	{ TERMMOD,              XK_Prior,        zoom,           {.f = +1} },
++	{ TERMMOD,              XK_Next,         zoom,           {.f = -1} },
++	{ TERMMOD,              XK_Home,         zoomreset,      {.f =  0} },
++	{ TERMMOD,              XK_C,            clipcopy,       {.i =  0} },
++	{ TERMMOD,              XK_V,            clippaste,      {.i =  0} },
++	{ TERMMOD,              XK_Y,            selpaste,       {.i =  0} },
++	{ ShiftMask,            XK_Insert,       selpaste,       {.i =  0} },
++	{ TERMMOD,              XK_Num_Lock,     numlock,        {.i =  0} },
++  { MODKEY,               XK_bracketleft,  chgalpha,       {.f = -1} },
++  { MODKEY,               XK_bracketright, chgalpha,       {.f = +1} },
+ };
+ 
+ /*
+diff --git a/st.h b/st.h
+index 9f91e2a..cda8c13 100644
+--- a/st.h
++++ b/st.h
+@@ -124,4 +124,4 @@ extern unsigned int tabspaces;
+ extern unsigned int defaultfg;
+ extern unsigned int defaultbg;
+ extern unsigned int defaultcs;
+-extern float alpha;
++extern float alpha, alpha_def;
+diff --git a/x.c b/x.c
+index 31508f1..ead6abd 100644
+--- a/x.c
++++ b/x.c
+@@ -60,6 +60,7 @@ static void zoom(const Arg *);
+ static void zoomabs(const Arg *);
+ static void zoomreset(const Arg *);
+ static void ttysend(const Arg *);
++static void chgalpha(const Arg *);
+ 
+ /* config.h for applying patches and the configuration. */
+ #include "config.h"
+@@ -1170,6 +1171,9 @@ xinit(int cols, int rows)
+ 	usedfont = (opt_font == NULL)? font : opt_font;
+ 	xloadfonts(usedfont, 0);
+ 
++  /* backup default alpha value */
++  alpha_def = alpha;
++
+ 	/* colors */
+   xw.cmap = XCreateColormap(xw.dpy, parent, xw.vis, None);
+ 	xloadcols();
+@@ -1393,6 +1397,23 @@ xmakeglyphfontspecs(XftGlyphFontSpec *specs, const Glyph *glyphs, int len, int x
+ 	return numspecs;
+ }
+ 
++void
++chgalpha(const Arg *arg)
++{
++  if (arg->f == -1.0f && alpha >= 0.04f)
++    alpha -= 0.04f;
++  else if (arg->f == 1.0f && alpha < 1.0f)
++    alpha += 0.04f;
++  else if (arg->f == 0.f)
++    alpha = alpha_def;
++  else
++    return;
++
++  dc.col[defaultbg].color.alpha = (unsigned short) (0xFFFF * alpha);
++  cresize(0, 0);
++  redraw();
++}
++
+ void
+ xdrawglyphfontspecs(const XftGlyphFontSpec *specs, Glyph base, int len, int x, int y)
+ {
+-- 
+2.34.1
+
