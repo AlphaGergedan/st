@@ -1,0 +1,185 @@
+From 33bb7f7f03b7578101e6c3d0bf796fe31875f72b Mon Sep 17 00:00:00 2001
+From: Atamert Rahma <atamertrahma@gmail.com>
+Date: Tue, 10 Sep 2024 18:32:44 +0200
+Subject: [PATCH] add alpha patch
+
+based on: https://st.suckless.org/patches/alpha/st-alpha-20220206-0.8.5.diff
+---
+ config.def.h |  3 +++
+ config.mk    |  4 ++--
+ st.h         |  1 +
+ x.c          | 48 +++++++++++++++++++++++++++++++++++-------------
+ 4 files changed, 41 insertions(+), 15 deletions(-)
+
+diff --git a/config.def.h b/config.def.h
+index 2cd740a..019a4e1 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -93,6 +93,9 @@ char *termname = "st-256color";
+  */
+ unsigned int tabspaces = 8;
+ 
++/* bg opacity */
++float alpha = 0.8;
++
+ /* Terminal colors (16 first used in escape sequence) */
+ static const char *colorname[] = {
+ 	/* 8 normal colors */
+diff --git a/config.mk b/config.mk
+index fdc29a7..8d720f2 100644
+--- a/config.mk
++++ b/config.mk
+@@ -16,7 +16,7 @@ PKG_CONFIG = pkg-config
+ INCS = -I$(X11INC) \
+        `$(PKG_CONFIG) --cflags fontconfig` \
+        `$(PKG_CONFIG) --cflags freetype2`
+-LIBS = -L$(X11LIB) -lm -lrt -lX11 -lutil -lXft \
++LIBS = -L$(X11LIB) -lm -lrt -lX11 -lutil -lXft -lXrender \
+        `$(PKG_CONFIG) --libs fontconfig` \
+        `$(PKG_CONFIG) --libs freetype2`
+ 
+@@ -27,7 +27,7 @@ STLDFLAGS = $(LIBS) $(LDFLAGS)
+ 
+ # OpenBSD:
+ #CPPFLAGS = -DVERSION=\"$(VERSION)\" -D_XOPEN_SOURCE=600 -D_BSD_SOURCE
+-#LIBS = -L$(X11LIB) -lm -lX11 -lutil -lXft \
++#LIBS = -L$(X11LIB) -lm -lX11 -lutil -lXft -lXrender \
+ #       `$(PKG_CONFIG) --libs fontconfig` \
+ #       `$(PKG_CONFIG) --libs freetype2`
+ #MANPREFIX = ${PREFIX}/man
+diff --git a/st.h b/st.h
+index fd3b0d8..9f91e2a 100644
+--- a/st.h
++++ b/st.h
+@@ -124,3 +124,4 @@ extern unsigned int tabspaces;
+ extern unsigned int defaultfg;
+ extern unsigned int defaultbg;
+ extern unsigned int defaultcs;
++extern float alpha;
+diff --git a/x.c b/x.c
+index d73152b..31508f1 100644
+--- a/x.c
++++ b/x.c
+@@ -1,4 +1,5 @@
+ /* See LICENSE for license details. */
++#include <X11/X.h>
+ #include <errno.h>
+ #include <math.h>
+ #include <limits.h>
+@@ -105,6 +106,7 @@ typedef struct {
+ 	XSetWindowAttributes attrs;
+ 	int scr;
+ 	int isfixed; /* is fixed geometry? */
++  int depth; /* bit depth */
+ 	int l, t; /* left and top offset */
+ 	int gm; /* geometry mask */
+ } XWindow;
+@@ -243,6 +245,7 @@ static char *usedfont = NULL;
+ static double usedfontsize = 0;
+ static double defaultfontsize = 0;
+ 
++static char *opt_alpha = NULL;
+ static char *opt_class = NULL;
+ static char **opt_cmd  = NULL;
+ static char *opt_embed = NULL;
+@@ -751,8 +754,8 @@ xresize(int col, int row)
+ 	win.th = row * win.ch;
+ 
+ 	XFreePixmap(xw.dpy, xw.buf);
+-	xw.buf = XCreatePixmap(xw.dpy, xw.win, win.w, win.h,
+-			DefaultDepth(xw.dpy, xw.scr));
++  xw.buf = XCreatePixmap(xw.dpy, xw.win, win.w, win.h,
++      xw.depth);
+ 	XftDrawChange(xw.draw, xw.buf);
+ 	xclear(0, 0, win.w, win.h);
+ 
+@@ -812,6 +815,14 @@ xloadcols(void)
+ 			else
+ 				die("could not allocate color %d\n", i);
+ 		}
++
++  /* set alpha value of bg color */
++  if (opt_alpha)
++    alpha = strtof(opt_alpha, NULL);
++  dc.col[defaultbg].color.alpha = (unsigned short) (0xFFFF * alpha);
++  dc.col[defaultbg].pixel &= 0x00FFFFFF;
++  dc.col[defaultbg].pixel |= (unsigned char) (0xFF * alpha) << 24;
++
+ 	loaded = 1;
+ }
+ 
+@@ -1134,11 +1145,23 @@ xinit(int cols, int rows)
+ 	Window parent, root;
+ 	pid_t thispid = getpid();
+ 	XColor xmousefg, xmousebg;
++  XWindowAttributes attr;
++  XVisualInfo vis;
+ 
+ 	if (!(xw.dpy = XOpenDisplay(NULL)))
+ 		die("can't open display\n");
+ 	xw.scr = XDefaultScreen(xw.dpy);
+-	xw.vis = XDefaultVisual(xw.dpy, xw.scr);
++
++	if (!(opt_embed && (parent = strtol(opt_embed, NULL, 0)))) {
++		parent = XRootWindow(xw.dpy, xw.scr);
++		xw.depth = 32;
++	} else {
++		XGetWindowAttributes(xw.dpy, parent, &attr);
++		xw.depth = attr.depth;
++	}
++
++	XMatchVisualInfo(xw.dpy, xw.scr, xw.depth, TrueColor, &vis);
++	xw.vis = vis.visual;
+ 
+ 	/* font */
+ 	if (!FcInit())
+@@ -1148,7 +1171,7 @@ xinit(int cols, int rows)
+ 	xloadfonts(usedfont, 0);
+ 
+ 	/* colors */
+-	xw.cmap = XDefaultColormap(xw.dpy, xw.scr);
++  xw.cmap = XCreateColormap(xw.dpy, parent, xw.vis, None);
+ 	xloadcols();
+ 
+ 	/* adjust fixed window geometry */
+@@ -1169,10 +1192,8 @@ xinit(int cols, int rows)
+ 	xw.attrs.colormap = xw.cmap;
+ 
+ 	root = XRootWindow(xw.dpy, xw.scr);
+-	if (!(opt_embed && (parent = strtol(opt_embed, NULL, 0))))
+-		parent = root;
+-	xw.win = XCreateWindow(xw.dpy, root, xw.l, xw.t,
+-			win.w, win.h, 0, XDefaultDepth(xw.dpy, xw.scr), InputOutput,
++  xw.win = XCreateWindow(xw.dpy, root, xw.l, xw.t,
++      win.w, win.h, 0, xw.depth, InputOutput,
+ 			xw.vis, CWBackPixel | CWBorderPixel | CWBitGravity
+ 			| CWEventMask | CWColormap, &xw.attrs);
+ 	if (parent != root)
+@@ -1180,11 +1201,9 @@ xinit(int cols, int rows)
+ 
+ 	memset(&gcvalues, 0, sizeof(gcvalues));
+ 	gcvalues.graphics_exposures = False;
+-	dc.gc = XCreateGC(xw.dpy, xw.win, GCGraphicsExposures,
+-			&gcvalues);
+-	xw.buf = XCreatePixmap(xw.dpy, xw.win, win.w, win.h,
+-			DefaultDepth(xw.dpy, xw.scr));
+-	XSetForeground(xw.dpy, dc.gc, dc.col[defaultbg].pixel);
++  xw.buf = XCreatePixmap(xw.dpy, xw.win, win.w, win.h, xw.depth);
++  dc.gc = XCreateGC(xw.dpy, xw.buf, GCGraphicsExposures, &gcvalues);
++  XSetForeground(xw.dpy, dc.gc, dc.col[defaultbg].pixel);
+ 	XFillRectangle(xw.dpy, xw.buf, dc.gc, 0, 0, win.w, win.h);
+ 
+ 	/* font spec buffer */
+@@ -2047,6 +2066,9 @@ main(int argc, char *argv[])
+ 	case 'a':
+ 		allowaltscreen = 0;
+ 		break;
++  case 'A':
++    opt_alpha = EARGF(usage());
++    break;
+ 	case 'c':
+ 		opt_class = EARGF(usage());
+ 		break;
+-- 
+2.34.1
+
