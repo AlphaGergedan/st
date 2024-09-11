@@ -101,7 +101,7 @@ char *termname = "st-256color";
 unsigned int tabspaces = 8;
 
 /* bg opacity */
-float alpha = 0.8;
+float alpha = 1.f;
 float alpha_def;
 
 /* 8 normal and 8 bright colors in each palette */
