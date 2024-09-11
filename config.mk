@@ -16,7 +16,10 @@ PKG_CONFIG = pkg-config
 INCS = -I$(X11INC) \
        `$(PKG_CONFIG) --cflags fontconfig` \
        `$(PKG_CONFIG) --cflags freetype2`
+# we need /usr/local/lib to build v2.3.5 of libxft at least
+# to resolve colored emoji issue
 LIBS = -L$(X11LIB) -lm -lrt -lX11 -lutil -lXft -lXrender \
+			 -Wl,-rpath=/usr/local/lib \
        `$(PKG_CONFIG) --libs fontconfig` \
        `$(PKG_CONFIG) --libs freetype2`
 

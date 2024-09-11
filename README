@@ -7,6 +7,9 @@ Requirements
 ------------
 In order to build st you need the Xlib header files.
 
+For color emoji support you need this mr to be merged: https://gitlab.freedesktop.org/xorg/lib/libxft/-/merge_requests/12.
+So include one version that has this patch applied. Tested and working with v2.3.8 libxft.
+
 
 Installation
 ------------
