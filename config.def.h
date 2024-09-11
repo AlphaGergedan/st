@@ -97,46 +97,39 @@ unsigned int tabspaces = 8;
 float alpha = 0.8;
 float alpha_def;
 
-/* Terminal colors (16 first used in escape sequence) */
-static const char *colorname[] = {
-	/* 8 normal colors */
-	"black",
-	"red3",
-	"green3",
-	"yellow3",
-	"blue2",
-	"magenta3",
-	"cyan3",
-	"gray90",
-
-	/* 8 bright colors */
-	"gray50",
-	"red",
-	"green",
-	"yellow",
-	"#5c5cff",
-	"magenta",
-	"cyan",
-	"white",
-
-	[255] = 0,
-
-	/* more colors can be added after 255 to use with DefaultXX */
-	"#cccccc",
-	"#555555",
-	"gray90", /* default foreground colour */
-	"black", /* default background colour */
+/* 8 normal and 8 bright colors in each palette */
+static const char *palettes[][16] = {
+  { "#20242d", "#b04b57", "#87b379", "#e5c179", "#7d8fa4", "#a47996", "#85a7a5", "#b3b8c3", "#000000", "#b04b57", "#87b379", "#e5c179", "#7d8fa4", "#a47996", "#85a7a5", "#ffffff" },
+  {
+    "#fbf1c7", /* hard contrast: #f9f5d7 / soft contrast: #f2e5bc */
+    "#cc241d", /* red     */
+    "#98971a", /* green   */
+    "#d79921", /* yellow  */
+    "#458588", /* blue    */
+    "#b16286", /* magenta */
+    "#689d6a", /* cyan    */
+    "#7c6f64", /* white   */
+    "#928374", /* black   */
+    "#9d0006", /* red     */
+    "#79740e", /* green   */
+    "#b57614", /* yellow  */
+    "#076678", /* blue    */
+    "#8f3f71", /* magenta */
+    "#427b58", /* cyan    */
+    "#3c3836", /* white   */
+  },
 };
 
+static const char **colorname;
 
 /*
  * Default colors (colorname index)
  * foreground, background, cursor, reverse cursor
  */
-unsigned int defaultfg = 258;
-unsigned int defaultbg = 259;
-unsigned int defaultcs = 256;
-static unsigned int defaultrcs = 257;
+unsigned int defaultfg = 5;
+unsigned int defaultbg = 0;
+unsigned int defaultcs = 5;
+static unsigned int defaultrcs = 5;
 
 /*
  * Default shape of cursor
@@ -207,6 +200,8 @@ static Shortcut shortcuts[] = {
 	{ TERMMOD,              XK_Num_Lock,     numlock,        {.i =  0} },
   { MODKEY,               XK_bracketleft,  chgalpha,       {.f = -1} },
   { MODKEY,               XK_bracketright, chgalpha,       {.f = +1} },
+  { MODKEY,               XK_F1,           setpalette,     {.i = 0 } },
+  { MODKEY,               XK_F2,           setpalette,     {.i = 1 } },
 };
 
 /*
