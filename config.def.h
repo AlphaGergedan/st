@@ -41,7 +41,7 @@ static float chscale = 1.0;
  *
  * More advanced example: L" `'\"()[]{}"
  */
-wchar_t *worddelimiters = L" ";
+wchar_t *worddelimiters = L" *?_-.[]~=&;!#$%^(){}<>";
 
 /* selection timeouts (in milliseconds) */
 static unsigned int doubleclicktimeout = 300;
@@ -106,25 +106,77 @@ float alpha_def;
 
 /* 8 normal and 8 bright colors in each palette */
 static const char *palettes[][16] = {
-  { "#20242d", "#b04b57", "#87b379", "#e5c179", "#7d8fa4", "#a47996", "#85a7a5", "#b3b8c3", "#000000", "#b04b57", "#87b379", "#e5c179", "#7d8fa4", "#a47996", "#85a7a5", "#ffffff" },
-  {
-    "#fbf1c7", /* hard contrast: #f9f5d7 / soft contrast: #f2e5bc */
-    "#cc241d", /* red     */
-    "#98971a", /* green   */
-    "#d79921", /* yellow  */
-    "#458588", /* blue    */
-    "#b16286", /* magenta */
-    "#689d6a", /* cyan    */
-    "#7c6f64", /* white   */
-    "#928374", /* black   */
-    "#9d0006", /* red     */
-    "#79740e", /* green   */
-    "#b57614", /* yellow  */
-    "#076678", /* blue    */
-    "#8f3f71", /* magenta */
-    "#427b58", /* cyan    */
-    "#3c3836", /* white   */
+  /* bg        error      success    strings    path       text       dirs            */
+
+  /** DARK **/
+
+  //{ // black   red        green      yellow     gray       light gray light gray light gray
+    //"#20242d", "#b04b57", "#87b379", "#e5c179", "#7d8fa4", "#a47996", "#85a7a5", "#b3b8c3",
+    //"#000000", "#b04b57", "#87b379", "#e5c179", "#7d8fa4", "#a47996", "#85a7a5", "#ffffff",
+  //},
+
+  /* gruvbox */
+  { // bg      red        green      yellow     blue       text       cyan      fg
+    "#282828", "#cc241d", "#98971a", "#d79921", "#458588", "#a89984", "#689d6a", "#ebdbb2",
+    "#928374", "#fb4934", "#b8bb26", "#fabd2f", "#83a598", "#a89984", "#8ec07c", "#fbf1c7",
   },
+
+  /* dracula */
+  { // background red       green      yellow     blue       magenta    cyan      white
+    "#282a36", "#ff5555", "#50fa7b", "#f1fa8c", "#bd93f9", "#ff79c6", "#8be9fd", "#f8f8f2",
+    "#6272a4", "#ff6e6e", "#69ff94", "#ffffa5", "#d6acff", "#ff92df", "#a4ffff", "#ffffff",
+  },
+
+  /* nord */
+  { // polar    red        green      yellow     blue       magenta    cyan      snow
+    "#2e3440", "#bf616a", "#a3be8c", "#ebcb8b", "#81a1c1", "#b48ead", "#88c0d0", "#eceff4",
+    "#3b4252", "#bf616a", "#a3be8c", "#ebcb8b", "#81a1c1", "#b48ead", "#8fbcbb", "#d8dee9",
+  },
+
+  /* tokyonight */
+  { // dark bg red        green      yellow     blue       magenta    cyan      fg
+    "#1a1b26", "#f7768e", "#9ece6a", "#e0af68", "#7aa2f7", "#bb9af7", "#7dcfff", "#c0caf5",
+    "#292e42", "#ff5370", "#73daca", "#ff9e64", "#7aa2f7", "#bb9af7", "#7dcfff", "#c0caf5",
+  },
+
+  /* monokai */
+  { // bg      red        green      yellow     blue       text       cyan      white
+    "#272822", "#f92672", "#a6e22e", "#f4bf75", "#66d9ef", "#a89984", "#a1efe4", "#f8f8f2",
+    "#75715e", "#f92672", "#a6e22e", "#f4bf75", "#66d9ef", "#a89984", "#a1efe4", "#f8f8f2",
+  },
+
+  /** LIGHT **/
+
+  /* gruvbox */
+  { // white   red        green      yellow     blue       text       cyan       white
+    "#fbf1c7", "#cc241d", "#98971a", "#d79921", "#458588", "#a89984", "#689d6a", "#7c6f64",
+    "#928374", "#9d0006", "#79740e", "#b57614", "#076678", "#a89984", "#427b58", "#3c3836",
+  },
+
+  /* cappucino */
+  { // milk    strawberry olive      cookie     gray       coffee     steel blue
+    "#fff4e6", "#854442", "#556b2f", "#be9b7b", "#708090", "#4b3832", "#4682b4", "pink",
+    "#fff4e6", "#854442", "#6b8e23", "#be9b7b", "#708090", "#fff4e6", "#4682b4", "pink",
+  },
+
+  /* rose-pine */
+  { // background red       green      yellow     blue       text       cyan      white
+    "#faf4ed", "#eb6f92", "#31748f", "#f6c177", "#9ccfd8", "#6e6a86", "#ebbcba", "#e0def4",
+    "#6e6a86", "#eb6f92", "#31748f", "#f6c177", "#9ccfd8", "#6e6a86", "#ebbcba", "#e0def4",
+  },
+
+  /* onedark */
+  { // black   red        green      yellow     blue       text       cyan      white
+    "#ffffff", "#e06c75", "#98c379", "#e5c07b", "#61afef", "#5c6370", "#56b6c2", "#abb2bf",
+    "#5c6370", "#be5046", "#98c379", "#e5c07b", "#61afef", "#5c6370", "#56b6c2", "#282c34",
+  },
+
+  /* solarized-light */
+  { // base3   red        green      yellow     blue       magenta    cyan      base2
+    "#fdf6e3", "#dc322f", "#859900", "#b58900", "#268bd2", "#d33682", "#2aa198", "#eee8d5",
+    "#93a1a1", "#dc322f", "#859900", "#b58900", "#268bd2", "#d33682", "#2aa198", "#073642",
+  },
+
 };
 
 static const char **colorname;
@@ -209,6 +261,14 @@ static Shortcut shortcuts[] = {
   { MODKEY,               XK_bracketright, chgalpha,       {.f = +1} },
   { MODKEY,               XK_F1,           setpalette,     {.i = 0 } },
   { MODKEY,               XK_F2,           setpalette,     {.i = 1 } },
+  { MODKEY,               XK_F3,           setpalette,     {.i = 2 } },
+  { MODKEY,               XK_F4,           setpalette,     {.i = 3 } },
+  { MODKEY,               XK_F5,           setpalette,     {.i = 4 } },
+  { MODKEY,               XK_F6,           setpalette,     {.i = 5 } },
+  { MODKEY,               XK_F7,           setpalette,     {.i = 6 } },
+  { MODKEY,               XK_F8,           setpalette,     {.i = 7 } },
+  { MODKEY,               XK_F9,           setpalette,     {.i = 8 } },
+  { MODKEY,               XK_F10,          setpalette,     {.i = 9 } },
 };
 
 /*
