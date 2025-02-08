@@ -115,31 +115,31 @@ static const char *palettes[][16] = {
     //"#000000", "#b04b57", "#87b379", "#e5c179", "#7d8fa4", "#a47996", "#85a7a5", "#ffffff",
   //},
 
-  /* gruvbox */
+  /* 0: gruvbox */
   { // bg      red        green      yellow     blue       text       cyan      fg
     "#282828", "#cc241d", "#98971a", "#d79921", "#458588", "#a89984", "#689d6a", "#ebdbb2",
     "#928374", "#fb4934", "#b8bb26", "#fabd2f", "#83a598", "#a89984", "#8ec07c", "#fbf1c7",
   },
 
-  /* dracula */
+  /* 1: dracula */
   { // background red       green      yellow     blue       magenta    cyan      white
     "#282a36", "#ff5555", "#50fa7b", "#f1fa8c", "#bd93f9", "#ff79c6", "#8be9fd", "#f8f8f2",
     "#6272a4", "#ff6e6e", "#69ff94", "#ffffa5", "#d6acff", "#ff92df", "#a4ffff", "#ffffff",
   },
 
-  /* nord */
+  /* 2: nord */
   { // polar    red        green      yellow     blue       magenta    cyan      snow
     "#2e3440", "#bf616a", "#a3be8c", "#ebcb8b", "#81a1c1", "#b48ead", "#88c0d0", "#eceff4",
     "#3b4252", "#bf616a", "#a3be8c", "#ebcb8b", "#81a1c1", "#b48ead", "#8fbcbb", "#d8dee9",
   },
 
-  /* tokyonight */
+  /* 3: tokyonight */
   { // dark bg red        green      yellow     blue       magenta    cyan      fg
     "#1a1b26", "#f7768e", "#9ece6a", "#e0af68", "#7aa2f7", "#bb9af7", "#7dcfff", "#c0caf5",
     "#292e42", "#ff5370", "#73daca", "#ff9e64", "#7aa2f7", "#bb9af7", "#7dcfff", "#c0caf5",
   },
 
-  /* monokai */
+  /* 4: monokai */
   { // bg      red        green      yellow     blue       text       cyan      white
     "#272822", "#f92672", "#a6e22e", "#f4bf75", "#66d9ef", "#a89984", "#a1efe4", "#f8f8f2",
     "#75715e", "#f92672", "#a6e22e", "#f4bf75", "#66d9ef", "#a89984", "#a1efe4", "#f8f8f2",
@@ -147,36 +147,45 @@ static const char *palettes[][16] = {
 
   /** LIGHT **/
 
-  /* gruvbox */
+  /* 5: gruvbox */
   { // white   red        green      yellow     blue       text       cyan       white
-    "#fbf1c7", "#cc241d", "#98971a", "#d79921", "#458588", "#a89984", "#689d6a", "#7c6f64",
-    "#928374", "#9d0006", "#79740e", "#b57614", "#076678", "#a89984", "#427b58", "#3c3836",
+    // Previous
+    //"#fbf1c7", "#cc241d", "#98971a", "#d79921", "#458588", "#a89984", "#689d6a", "#7c6f64",
+    //"#928374", "#9d0006", "#79740e", "#b57614", "#076678", "#a89984", "#427b58", "#3c3836",
+    // Current (white is now has more contrast)
+    "#fbf1c7", "#cc241d", "#98971a", "#d79921", "#458588", "#6e6558", "#689d6a", "#7c6f64",
+    "#928374", "#9d0006", "#79740e", "#b57614", "#076678", "#6e6558", "#427b58", "#3c3836",
   },
 
-  /* cappucino */
+  /* 6: cappucino */
   { // milk    strawberry olive      cookie     gray       coffee     steel blue
     "#fff4e6", "#854442", "#556b2f", "#be9b7b", "#708090", "#4b3832", "#4682b4", "pink",
     "#fff4e6", "#854442", "#6b8e23", "#be9b7b", "#708090", "#fff4e6", "#4682b4", "pink",
   },
 
-  /* rose-pine */
+  /* 7: rose-pine */
   { // background red       green      yellow     blue       text       cyan      white
     "#faf4ed", "#eb6f92", "#31748f", "#f6c177", "#9ccfd8", "#6e6a86", "#ebbcba", "#e0def4",
     "#6e6a86", "#eb6f92", "#31748f", "#f6c177", "#9ccfd8", "#6e6a86", "#ebbcba", "#e0def4",
   },
 
-  /* onedark */
+  /* 8: onedark */
   { // black   red        green      yellow     blue       text       cyan      white
     "#ffffff", "#e06c75", "#98c379", "#e5c07b", "#61afef", "#5c6370", "#56b6c2", "#abb2bf",
     "#5c6370", "#be5046", "#98c379", "#e5c07b", "#61afef", "#5c6370", "#56b6c2", "#282c34",
   },
 
-  /* solarized-light */
+  /* 9: solarized-light */
   { // base3   red        green      yellow     blue       magenta    cyan      base2
     "#fdf6e3", "#dc322f", "#859900", "#b58900", "#268bd2", "#d33682", "#2aa198", "#eee8d5",
     "#93a1a1", "#dc322f", "#859900", "#b58900", "#268bd2", "#d33682", "#2aa198", "#073642",
   },
 
+  /* 10: Kanagawa-dragon */
+  { // background red       green      yellow     blue       magenta    cyan      white
+    "#181616", "#c4746e", "#8a9a7b", "#c4b28a", "#8ba4b0", "#a292a3", "#8ea4a2", "#c8c093",
+    "#a6a69c", "#e46876", "#87a987", "#e6c384", "#7fb4ca", "#938aa9", "#7aa89f", "#c5c9c5",
+  },
 };
 
 static const char **colorname;
@@ -269,6 +278,7 @@ static Shortcut shortcuts[] = {
   { MODKEY,               XK_F8,           setpalette,     {.i = 7 } },
   { MODKEY,               XK_F9,           setpalette,     {.i = 8 } },
   { MODKEY,               XK_F10,          setpalette,     {.i = 9 } },
+  { MODKEY,               XK_F11,          setpalette,     {.i = 10 } },
 };
 
 /*
